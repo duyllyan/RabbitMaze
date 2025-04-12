@@ -8,17 +8,22 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var viewModel = MazeViewModel()
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        VStack(spacing: 0) {
+            ForEach(0..<viewModel.grid.count, id: \.self) { row in
+                HStack(spacing: 0) {
+                    ForEach(0..<viewModel.grid.count, id: \.self) { column in
+                        Text(viewModel.grid[row][column] == .path ? "🟨" : "🟩")
+                    }
+                }
+            }
         }
-        .padding()
     }
 }
 
 #Preview {
     ContentView()
 }
+
