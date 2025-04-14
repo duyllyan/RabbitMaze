@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MazeView: View {
-    @ObservedObject private var viewModel = MazeViewModel(generator: BinaryTreeGenerator(), width: 31, height: 31)
+    @ObservedObject private var viewModel = MazeViewModel(generator: EllersGenerator(), width: 35, height: 31)
     
     var body: some View {
         VStack(spacing: 0) {
@@ -20,7 +20,7 @@ struct MazeView: View {
 
                         Rectangle()
                             .fill(colorForCell(cell, at: position))
-                            .frame(width: 6, height: 6)
+                            .frame(width: 9, height: 9)
                     }
                 }
             }

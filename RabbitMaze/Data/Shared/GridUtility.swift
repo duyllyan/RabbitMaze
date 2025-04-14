@@ -11,8 +11,8 @@ struct GridUtility {
     static func randomOddCoordinate(width: Int, height: Int) -> Coordinate {
         var row: Int
         var column: Int
-        repeat { row = Int.random(in: 1..<height - 1) } while row.isOdd
-        repeat { column = Int.random(in: 1..<width - 1) } while column.isOdd
+        repeat { row = Int.random(in: 1..<height - 1) } while row.isEven
+        repeat { column = Int.random(in: 1..<width - 1) } while column.isEven
         return Coordinate(row: row, col: column)
     }
     
@@ -25,19 +25,29 @@ struct GridUtility {
     static func startCell(_ grid: [[CellType]]) -> Coordinate {
         var row: Int
         var col: Int
-        repeat { row = Int.random(in: 1..<grid.count - 1) } while row.isOdd
-        repeat { col = Int.random(in: 1..<grid[0].count - 1) } while col.isOdd
+        repeat { row = Int.random(in: 1..<grid.count - 1) } while row.isEven
+        repeat { col = Int.random(in: 1..<grid[0].count - 1) } while col.isEven
         return Coordinate(row: row, col: col)
+    }
+    
+    static func initMazeWithOddIntersections(width: Int, height: Int) -> [[CellType]] {
+        var maze = Self.initMaze(width: width, height: height)
+        for row in stride(from: 1, to: maze.count, by: 2) {
+            for col in stride(from: 1, to: maze[0].count, by: 2) {
+                maze[row][col] = .path
+            }
+        }
+        return maze
     }
 }
 
 extension Int {
-    var isOdd: Bool {
+    var isEven: Bool {
         self % 2 == 0
     }
     
     var toOdd: Int {
-        self.isOdd ? self + 1 : self
+        self.isEven ? self + 1 : self
     }
 }
 
