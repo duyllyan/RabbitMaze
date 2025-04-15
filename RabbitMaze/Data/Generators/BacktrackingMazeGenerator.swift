@@ -6,15 +6,20 @@
 //
 
 final class BacktrackingMazeGenerator: AnimatedMazeGenerator {
+    var height: Int
+    var width: Int
+    var grid: [[CellType]] = []
     
-    func generateSteps(width: Int, height: Int) -> AsyncStream<MazeStep> {
+    init(width: Int, height: Int) {
+        self.width = width
+        self.height = height
+        self.grid = GridUtility.initMaze(width: width, height: height)
+    }
+    
+    func generateSteps() -> AsyncStream<MazeStep> {
         AsyncStream { continuation in
             Task {
-                let adjustedWidth = width.toOdd
-                let adjustedHeight = height.toOdd
-                var grid = Array(repeating: Array(repeating: CellType.wall, count: adjustedWidth), count: adjustedHeight)
-                
-                let start = GridUtility.randomOddCoordinate(width: adjustedWidth, height: adjustedHeight)
+                let start = GridUtility.startCell(grid)
                 start.updateCell(in: &grid, continuation: continuation)
                 
                 var stack: [Coordinate] = [start]

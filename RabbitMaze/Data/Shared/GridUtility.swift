@@ -16,10 +16,10 @@ struct GridUtility {
         return Coordinate(row: row, col: column)
     }
     
-    static func initMaze(width: Int, height: Int) -> [[CellType]] {
+    static func initMaze(width: Int, height: Int, type: CellType = .wall) -> [[CellType]] {
         let adjustedWidth = width.toOdd
         let adjustedHeight = height.toOdd
-        return Array(repeating: Array(repeating: .wall, count: adjustedWidth), count: adjustedHeight)
+        return Array(repeating: Array(repeating: type, count: adjustedWidth), count: adjustedHeight)
     }
     
     static func startCell(_ grid: [[CellType]]) -> Coordinate {

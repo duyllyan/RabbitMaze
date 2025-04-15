@@ -28,7 +28,7 @@ struct Coordinate: Equatable, Hashable {
         continuation.yield(MazeStep(row: self.row, col: self.col, type: type))
     }
     
-    private func isInsideGrid(_ grid: [[CellType]]) -> Bool {
+    func isInsideGrid(_ grid: [[CellType]]) -> Bool {
         return row > 0 && row < grid.count &&
                col > 0 && col < grid[0].count
     }

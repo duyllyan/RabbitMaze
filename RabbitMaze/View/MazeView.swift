@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MazeView: View {
-    @ObservedObject private var viewModel = MazeViewModel(generator: EllersGenerator(), width: 35, height: 31)
+    @ObservedObject private var viewModel = MazeViewModel(generator: RecursiveDivisionGenerator(width: 29, height: 31))
     
     var body: some View {
         VStack(spacing: 0) {

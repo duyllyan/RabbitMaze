@@ -6,11 +6,19 @@
 //
 
 final class EllersGenerator: AnimatedMazeGenerator {
-    func generateSteps(width: Int, height: Int) -> AsyncStream<MazeStep> {
+    var height: Int
+    var width: Int
+    var grid: [[CellType]] = []
+    
+    init(width: Int, height: Int) {
+        self.width = width
+        self.height = height
+        self.grid = GridUtility.initMazeWithOddIntersections(width: width, height: height)
+    }
+    
+    func generateSteps() -> AsyncStream<MazeStep> {
         AsyncStream { continuation in
             Task {
-                var grid = GridUtility.initMaze(width: width, height: height)
-                
                 var setManager = EllerSetManager()
                 
                 for row in stride(from: 1, to: grid.count - 1, by: 2) {

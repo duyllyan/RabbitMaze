@@ -6,12 +6,20 @@
 //
 
 final class SidewinderGenerator: AnimatedMazeGenerator {
-    func generateSteps(width: Int, height: Int) -> AsyncStream<MazeStep> {
+    var height: Int
+    var width: Int
+    var grid: [[CellType]] = []
+    
+    init(width: Int, height: Int) {
+        self.width = width
+        self.height = height
+        self.grid = GridUtility.initMazeWithOddIntersections(width: self.width, height: self.height)
+    }
+    
+    func generateSteps() -> AsyncStream<MazeStep> {
         
         AsyncStream { continuation in
             Task {
-                var grid = GridUtility.initMaze(width: width, height: height)
-                
                 for row in stride(from: 1, to: grid.count, by: 2) {
                     
                     var run: [Coordinate] = []
@@ -29,7 +37,6 @@ final class SidewinderGenerator: AnimatedMazeGenerator {
                             if let random = run.randomElement(), !atNorthernEdge {
                                 let above = Coordinate(row: (random.row - 1), col: random.col)
                                 above.updateCell(in: &grid, continuation: continuation)
-                                random.updateCell(in: &grid, continuation: continuation)
                             }
                             run.removeAll()
                         } else {

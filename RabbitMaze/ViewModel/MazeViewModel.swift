@@ -15,16 +15,16 @@ class MazeViewModel: ObservableObject {
     
     private var generator: AnimatedMazeGenerator
     
-    init(generator: AnimatedMazeGenerator, width: Int, height: Int) {
-        self.maze = GridUtility.initMaze(width: width, height: height)
+    init(generator: AnimatedMazeGenerator) {
+        self.maze = generator.grid
         self.generator = generator
         self.entry = Coordinate(row: 1, col: 1)
-        self.exit = Coordinate(row: height.toOdd - 2, col: width.toOdd - 2)
+        self.exit = Coordinate(row: generator.grid.count - 2, col: generator.grid[0].count - 2)
     }
     
     func start() {
         Task {
-            for await step in generator.generateSteps(width: self.maze[0].count, height: self.maze.count) {
+            for await step in generator.generateSteps() {
                 self.maze[step.row][step.col] = step.type
             }
         }

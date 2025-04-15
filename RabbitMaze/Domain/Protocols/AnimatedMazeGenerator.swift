@@ -6,5 +6,8 @@
 //
 
 protocol AnimatedMazeGenerator {
-    func generateSteps(width: Int, height: Int) -> AsyncStream<MazeStep>
+    var grid: [[CellType]] { get set }
+    var width: Int { get }
+    var height: Int { get }
+    func generateSteps() -> AsyncStream<MazeStep>
 }

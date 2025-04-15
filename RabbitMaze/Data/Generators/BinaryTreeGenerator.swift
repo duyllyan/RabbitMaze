@@ -6,11 +6,19 @@
 //
 
 final class BinaryTreeGenerator: AnimatedMazeGenerator {
-    func generateSteps(width: Int, height: Int) -> AsyncStream<MazeStep> {
+    var height: Int
+    var width: Int
+    var grid: [[CellType]] = []
+    
+    init(width: Int, height: Int) {
+        self.width = width
+        self.height = height
+        self.grid = GridUtility.initMazeWithOddIntersections(width: self.width, height: self.height)
+    }
+    
+    func generateSteps() -> AsyncStream<MazeStep> {
         AsyncStream { continuation in
             Task {
-                var grid = GridUtility.initMaze(width: width, height: height)
-                
                 for row in stride(from: 1, to: grid.count, by: 2) {
                     for col in stride(from: 1, to: grid[0].count, by: 2) {
                         let current = Coordinate(row: row, col: col)
@@ -18,7 +26,6 @@ final class BinaryTreeGenerator: AnimatedMazeGenerator {
                         let directions = [Direction.down, Direction.right]
                         if let neighbor = current.findNeighbors(in: grid, at: directions).randomElement() {
                             let intermediate = Coordinate(row: (current.row + neighbor.row) / 2, col: (current.col + neighbor.col) / 2)
-                            neighbor.updateCell(in: &grid, continuation: continuation)
                             intermediate.updateCell(in: &grid, continuation: continuation)
                             try? await Task.sleep(nanoseconds: Constants.animationStepDelay)
                         }
