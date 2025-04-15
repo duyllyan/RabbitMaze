@@ -1,0 +1,54 @@
+//
+//  JoystickView.swift
+//  RabbitMaze
+//
+//  Created by Duyllyan Almeida de Carvalho on 15/04/25.
+//
+import SwiftUI
+
+struct JoystickView: View {
+    let moveUp: () -> Void
+    let moveDown: () -> Void
+    let moveLeft: () -> Void
+    let moveRight: () -> Void
+    var disabled: Bool
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(alignment: .center, spacing: 8) {
+                Button(action: moveUp, label: {
+                    Text("⬆️")
+                })
+                .disabled(disabled)
+            }
+            HStack() {
+                Button(action: moveLeft, label: {
+                    Text("⬅️")
+                })
+                .disabled(disabled)
+                Spacer()
+                Button(action: moveRight, label: {
+                    Text("➡️")
+                })
+                .disabled(disabled)
+            }
+            HStack(spacing: 0) {
+                Button(action: moveDown, label: {
+                    Text("⬇️")
+                })
+                .disabled(disabled)
+            }
+        }
+        .font(.system(size: 50))
+        .frame(maxWidth: 180)
+    }
+}
+
+#Preview {
+    JoystickView (
+        moveUp: {},
+        moveDown: {},
+        moveLeft: {},
+        moveRight: {},
+        disabled: true
+    )
+}

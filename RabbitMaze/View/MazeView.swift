@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct MazeView: View {
-    @ObservedObject private var viewModel = MazeViewModel(generator: RecursiveDivisionGenerator(width: 29, height: 31))
+    @ObservedObject private var viewModel = MazeViewModel(generator: AldousBorderGenerator(width: 7, height: 7))
+    @State private var wonGame = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -18,25 +19,44 @@ struct MazeView: View {
                         let cell = viewModel.maze[row][col]
                         let position = Coordinate(row: row, col: col)
 
-                        Rectangle()
-                            .fill(colorForCell(cell, at: position))
-                            .frame(width: 9, height: 9)
+                        Text(fillCell(cell, at: position))
                     }
                 }
             }
+            
+            JoystickView(
+                moveUp: {
+                    viewModel.move(direction: .up)
+                },
+                moveDown: {
+                    viewModel.move(direction: .down)
+                },
+                moveLeft: {
+                    viewModel.move(direction: .left)
+                },
+                moveRight: {
+                    viewModel.move(direction: .right)
+                },
+                disabled: viewModel.isGenerating
+            )
         }
         .onAppear {
             viewModel.start()
         }
+        .alert("Congrats! You won!", isPresented: $viewModel.wonGame) {
+               Button("OK") {
+                   viewModel.restart()
+               }
+             }
     }
 
-    func colorForCell(_ cell: CellType, at position: Coordinate) -> Color {
+    func fillCell(_ cell: CellType, at position: Coordinate) -> String {
         if position == viewModel.entry {
-            return .blue
+            return "🐰"
         } else if position == viewModel.exit {
-            return .red
+            return "🥕"
         } else {
-            return cell == .wall ? .green : .yellow
+            return cell == .wall ? "🟩" : "🟧"
         }
     }
 }
