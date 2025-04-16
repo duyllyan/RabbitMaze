@@ -38,8 +38,8 @@ struct JoystickView: View {
                 .disabled(disabled)
             }
         }
-        .font(.system(size: 40))
-        .frame(maxWidth: 140)
+        .font(.system(size: 30))
+        .frame(maxWidth: 100)
     }
 }
 

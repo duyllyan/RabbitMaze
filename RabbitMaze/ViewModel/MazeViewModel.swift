@@ -111,4 +111,21 @@ class MazeViewModel: ObservableObject {
         }
         wonGame = entry == exit
     }
+    
+    func canMove(to coordinate: Coordinate) -> Bool {
+        guard maze.indices.contains(coordinate.row),
+              maze[coordinate.row].indices.contains(coordinate.col),
+              maze[coordinate.row][coordinate.col] == .path else {
+            return false
+        }
+
+        let dr = abs(coordinate.row - entry.row)
+        let dc = abs(coordinate.col - entry.col)
+        return (dr == 1 && dc == 0) || (dr == 0 && dc == 1)
+    }
+
+    func move(to coordinate: Coordinate) {
+        entry = coordinate
+        wonGame = entry == exit
+    }
 }

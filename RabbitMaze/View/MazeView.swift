@@ -9,6 +9,8 @@ import SwiftUI
 
 struct MazeView: View {
     @ObservedObject private var viewModel = MazeViewModel()
+    @State private var touchedCoordinate: Coordinate? = nil
+    @State private var lastTouchedCoordinate: Coordinate? = nil
     
     var body: some View {
         VStack(spacing: 0) {
@@ -29,57 +31,80 @@ struct MazeView: View {
                     .labelsHidden()
                 }
             }
-            .frame(width: .infinity, height: 200)
+            .frame(height: 200)
             GeometryReader { geometry in
-                let availableWidth = geometry.size.width
-                let availableHeight = geometry.size.height
+                let totalWidth = geometry.size.width
+                let totalHeight = geometry.size.height
                 
-                let mazeGridWidth = CGFloat(viewModel.width > 0 ? viewModel.width : 1)
-                let mazeGridHeight = CGFloat(viewModel.height > 0 ? viewModel.height : 1)
+                let rows = viewModel.maze.count
+                let cols = viewModel.maze.first?.count ?? 0
                 
-                let maxCellWidth = availableWidth / mazeGridWidth
-                let maxCellHeight = availableHeight / mazeGridHeight
+                let cellSize = min(
+                    totalWidth / CGFloat(cols),
+                    totalHeight / CGFloat(rows)
+                )
                 
-                let cellSize = min(maxCellWidth, maxCellHeight)
-                
-                if cellSize > 0 {
+                ZStack {
                     VStack(spacing: 0) {
-                        ForEach(0..<viewModel.maze.count, id: \.self) { row in
+                        ForEach(0..<rows, id: \.self) { row in
                             HStack(spacing: 0) {
-                                ForEach(0..<viewModel.maze[row].count, id: \.self) { col in
-                                    if viewModel.maze.indices.contains(row) && viewModel.maze[row].indices.contains(col) {
+                                ForEach(0..<cols, id: \.self) { col in
+                                    if viewModel.maze.indices.contains(row),
+                                       viewModel.maze[row].indices.contains(col) {
+                                        
                                         let cell = viewModel.maze[row][col]
                                         let position = Coordinate(row: row, col: col)
                                         
-                                        FillCell(position: position, playerPosition: viewModel.entry, carrotPosition: viewModel.exit, cell: cell)
-                                            .lineLimit(1)
-                                            .minimumScaleFactor(0.2)
-                                            .frame(width: cellSize, height: cellSize, alignment: .center)
+                                        FillCell(
+                                            position: position,
+                                            playerPosition: viewModel.entry,
+                                            carrotPosition: viewModel.exit,
+                                            cell: cell
+                                        )
+                                        .frame(width: cellSize, height: cellSize)
                                     }
                                 }
                             }
                         }
                     }
-                    .frame(width: geometry.size.width, height: geometry.size.height, alignment: .center)
+                    .frame(
+                        width: CGFloat(cols) * cellSize,
+                        height: CGFloat(rows) * cellSize,
+                        alignment: .center
+                    )
+                    .position(x: totalWidth / 2, y: totalHeight / 2)
+                    
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .gesture(
+                            DragGesture(minimumDistance: 0)
+                                .onChanged { value in
+                                    let x = value.location.x - (totalWidth - CGFloat(cols) * cellSize) / 2
+                                    let y = value.location.y - (totalHeight - CGFloat(rows) * cellSize) / 2
+                                    
+                                    let row = Int(y / cellSize)
+                                    let col = Int(x / cellSize)
+                                    
+                                    guard row >= 0, row < rows, col >= 0, col < cols else { return }
+                                    
+                                    let coordinate = Coordinate(row: row, col: col)
+                                    
+                                    // Impede chamadas duplicadas para a mesma célula
+                                    guard coordinate != lastTouchedCoordinate else { return }
+                                    
+                                    lastTouchedCoordinate = coordinate
+                                    
+                                    if viewModel.canMove(to: coordinate) {
+                                        viewModel.move(to: coordinate)
+                                    }
+                                }
+                                .onEnded { _ in
+                                    // Reset ao fim do gesto
+                                    lastTouchedCoordinate = nil
+                                }
+                        )
                 }
             }
-            Spacer()
-            JoystickView(
-                moveUp: {
-                    viewModel.move(direction: .up)
-                },
-                moveDown: {
-                    viewModel.move(direction: .down)
-                },
-                moveLeft: {
-                    viewModel.move(direction: .left)
-                },
-                moveRight: {
-                    viewModel.move(direction: .right)
-                },
-                disabled: viewModel.isGenerating
-            )
-            Spacer()
         }
         .onAppear {
             viewModel.start()
@@ -98,22 +123,38 @@ struct FillCell: View {
     let playerPosition: Coordinate
     let carrotPosition: Coordinate
     let cell: CellType
+    
     var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                Rectangle()
+                    .fill(backgroundColor)
+                
+                Text(overlayEmoji)
+                    .font(.system(size: geo.size.height * 0.8))
+                    .frame(width: geo.size.width, height: geo.size.height)
+            }
+        }
+        .aspectRatio(1, contentMode: .fit)
+    }
+    
+    private var backgroundColor: Color {
         if position == playerPosition {
-            return ZStack {
-                Rectangle().fill(.red)
-                Text("🐰")
-            }
+            return .red
         } else if position == carrotPosition {
-            return ZStack {
-                Rectangle().fill(.yellow)
-                Text("🥕")
-            }
+            return .yellow
         } else {
-            return ZStack {
-                Rectangle().fill(cell == .wall ? .black : .cyan)
-                Text("")
-            }
+            return cell == .wall ? .black : .cyan
+        }
+    }
+    
+    private var overlayEmoji: String {
+        if position == playerPosition {
+            return "🐰"
+        } else if position == carrotPosition {
+            return "🥕"
+        } else {
+            return ""
         }
     }
 }
@@ -121,5 +162,3 @@ struct FillCell: View {
 #Preview {
     MazeView()
 }
-
-
