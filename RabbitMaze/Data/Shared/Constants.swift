@@ -8,6 +8,6 @@
 struct Constants {
     private init() {}
     
-    static let animationStepDelay: UInt64 = 20_000_000
+    static let animationStepDelay: UInt64 = 500_000
 }
 

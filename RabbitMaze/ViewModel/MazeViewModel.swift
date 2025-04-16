@@ -12,33 +12,73 @@ class MazeViewModel: ObservableObject {
     @Published var maze: [[CellType]] = []
     @Published var isGenerating: Bool = false
     @Published var wonGame: Bool = false
+    
+    @Published var width: Int {
+        didSet {
+            restart(generatorType: generatorType)
+        }
+    }
+    @Published var height: Int{
+        didSet {
+            restart(generatorType: generatorType)
+        }
+    }
+    
+    private var generationTask: Task<Void, Never>?
+        
+    @Published var generatorType: AnimatedMazeGeneratorType
     var entry: Coordinate
-    let exit: Coordinate
+    var exit: Coordinate
     
     private var generator: AnimatedMazeGenerator
     
-    init(generator: AnimatedMazeGenerator) {
+    init(width: Int = 17, heigth: Int = 17, generatorType: AnimatedMazeGeneratorType = .huntAndKillGenerator) {
+        self.width = width
+        self.height = heigth
+        self.generatorType = generatorType
+        self.generator = AnimatedMazeGeneratorFactory.make(generatorType, width: width, height: heigth)
         self.maze = generator.grid
-        self.generator = generator
         self.entry = Coordinate(row: 1, col: 1)
         self.exit = Coordinate(row: generator.grid.count - 2, col: generator.grid[0].count - 2)
     }
     
     func start() {
-        Task {
-            self.isGenerating = true
-            for await step in generator.generateSteps() {
-                self.maze[step.row][step.col] = step.type
+        generationTask = Task {
+            await MainActor.run {
+                self.isGenerating = true
+                self.maze = self.generator.grid
             }
-            self.isGenerating = false
+            do {
+                for await step in generator.generateSteps() {
+                    try Task.checkCancellation()
+                    
+                    await MainActor.run {
+                        guard self.maze.indices.contains(step.row) && self.maze[step.row].indices.contains(step.col) else { return }
+                        self.maze[step.row][step.col] = step.type
+                    }
+                }
+                await MainActor.run {
+                    self.isGenerating = false
+                }
+            } catch {
+                await MainActor.run {
+                    if !Task.isCancelled {
+                        self.isGenerating = false
+                    }
+                }
+            }
         }
-        
     }
     
-    func restart() {
-        entry = Coordinate(row: 1, col: 1)
-        generator.grid = generator.initGrid(width: generator.grid.count, height: generator.grid[0].count)
-        maze = generator.grid
+    func restart(generatorType: AnimatedMazeGeneratorType) {
+        generationTask?.cancel()
+        self.generatorType = generatorType
+        self.generator = AnimatedMazeGeneratorFactory.make(self.generatorType, width: self.width, height: self.height)
+        self.entry = Coordinate(row: 1, col: 1)
+        self.exit = Coordinate(row: generator.grid.count - 2, col: generator.grid[0].count - 2)
+        self.maze = self.generator.grid
+        wonGame = false
+        isGenerating = false
         start()
     }
     
