@@ -1,17 +1,11 @@
-//
-//  JoystickView.swift
-//  RabbitMaze
-//
-//  Created by Duyllyan Almeida de Carvalho on 15/04/25.
-//
 import SwiftUI
 
 struct JoystickView: View {
-    let moveUp: () -> Void
-    let moveDown: () -> Void
-    let moveLeft: () -> Void
-    let moveRight: () -> Void
-    var disabled: Bool
+    let moveUp: () -> Void = {}
+    let moveDown: () -> Void = {}
+    let moveLeft: () -> Void = {}
+    let moveRight: () -> Void = {}
+    var disabled: Bool = false
     var body: some View {
         VStack(spacing: 0) {
             HStack(alignment: .center, spacing: 8) {
@@ -44,11 +38,5 @@ struct JoystickView: View {
 }
 
 #Preview {
-    JoystickView (
-        moveUp: {},
-        moveDown: {},
-        moveLeft: {},
-        moveRight: {},
-        disabled: true
-    )
+    JoystickView()
 }
